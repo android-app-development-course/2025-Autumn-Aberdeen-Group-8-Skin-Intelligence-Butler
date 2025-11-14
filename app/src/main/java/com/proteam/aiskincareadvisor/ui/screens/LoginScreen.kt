@@ -1,0 +1,468 @@
+package com.proteam.aiskincareadvisor.ui.screens
+
+// Add these imports at the top of your file
+// Add/modify these imports at the top
+import android.app.Activity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
+import com.google.firebase.auth.GoogleAuthProvider
+import com.proteam.aiskincareadvisor.R
+import com.proteam.aiskincareadvisor.data.auth.FirebaseAuthHelper
+import kotlinx.coroutines.launch
+
+@Composable
+fun LoginScreen(onBack: () -> Unit, onRegisterClick: () -> Unit = {}, onLoginSuccess: () -> Unit) {
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var passwordVisible by remember { mutableStateOf(false) }
+    var rememberMe by remember { mutableStateOf(false) }
+    var isLoading by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+
+    val firebaseAuthHelper = remember { FirebaseAuthHelper() }
+    val coroutineScope = rememberCoroutineScope()
+
+    val primaryColor = Color(0xFF6A43E8)
+    val iconColor = Color(0xFF757575)
+
+    val context = LocalContext.current
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+            try {
+                // Get Google account
+                val account = task.getResult(ApiException::class.java)
+                account?.idToken?.let { idToken ->
+                    // Create credential
+                    val credential = GoogleAuthProvider.getCredential(idToken, null)
+
+                    // Sign in with credential
+                    coroutineScope.launch {
+                        isLoading = true
+                        try {
+                            val authResult = firebaseAuthHelper.signInWithCredential(credential)
+                            if (authResult.isSuccess) {
+                                onLoginSuccess()
+                            } else {
+                                errorMessage = authResult.exceptionOrNull()?.message ?: "Google Sign-In failed"
+                            }
+                        } catch (e: Exception) {
+                            errorMessage = e.message ?: "Authentication failed"
+                        } finally {
+                            isLoading = false
+                        }
+                    }
+                } ?: run {
+                    errorMessage = "Google sign in failed: ID Token is null"
+                }
+            } catch (e: ApiException) {
+                errorMessage = "Google sign in failed: ${e.message}"
+            }
+        }
+    }
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // Back button
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Start
+        ) {
+            IconButton(onClick = onBack) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_arrow_back),
+                    contentDescription = "Back",
+                    tint = Color(0xFF4A4A4A)
+                )
+            }
+        }
+
+        // App logo
+        Image(
+            painter = painterResource(id = R.drawable.placeholder),
+            contentDescription = "App Logo",
+            modifier = Modifier
+                .size(120.dp)
+                .padding(vertical = 16.dp)
+        )
+
+        // Heading
+        Text(
+            "Welcome Back",
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF4A4A4A)
+        )
+
+        Text(
+            "Sign in to continue your skincare journey",
+            fontSize = 14.sp,
+            color = Color(0xFF757575),
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(top = 8.dp, bottom = 24.dp)
+        )
+
+        // Show error message if there is one
+        errorMessage?.let {
+            Text(
+                text = it,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(vertical = 8.dp)
+            )
+        }
+
+        // Input fields with improved styling
+        OutlinedTextField(
+            value = email,
+            onValueChange = {
+                email = it
+                errorMessage = null
+            },
+            leadingIcon = {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_email),
+                    contentDescription = null,
+                    tint = iconColor
+                )
+            },
+            placeholder = { Text("Email Address") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 12.dp),
+            shape = RoundedCornerShape(12.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = primaryColor,
+                unfocusedBorderColor = Color(0xFFCCCCCC)
+            ),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+            isError = errorMessage != null
+        )
+
+        OutlinedTextField(
+            value = password,
+            onValueChange = {
+                password = it
+                errorMessage = null
+            },
+            leadingIcon = {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_lock),
+                    contentDescription = null,
+                    tint = iconColor
+                )
+            },
+            trailingIcon = {
+                IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                    Icon(
+                        painter = painterResource(
+                            id = if (passwordVisible)
+                                R.drawable.ic_visibility
+                            else
+                                R.drawable.ic_visibility_off
+                        ),
+                        contentDescription = "Toggle password visibility",
+                        tint = Color(0xFF757575)
+                    )
+                }
+            },
+            placeholder = { Text("Password") },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 12.dp),
+            visualTransformation = if (passwordVisible)
+                VisualTransformation.None
+            else
+                PasswordVisualTransformation(),
+            shape = RoundedCornerShape(12.dp),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedBorderColor = primaryColor,
+                unfocusedBorderColor = Color(0xFFCCCCCC)
+            ),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+            isError = errorMessage != null
+        )
+
+        // Remember me and forgot password
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Checkbox(
+                    checked = rememberMe,
+                    onCheckedChange = { rememberMe = it },
+                    colors = CheckboxDefaults.colors(checkedColor = primaryColor)
+                )
+                Text(
+                    "Remember me",
+                    fontSize = 13.sp,
+                    color = Color(0xFF757575),
+                    modifier = Modifier.padding(start = 4.dp)
+                )
+            }
+            Text(
+                "Forgot Password?",
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold,
+                color = primaryColor,
+                modifier = Modifier.clickable {
+                    // In the forgot password click handler:
+                    if (email.isNotEmpty()) {
+                        coroutineScope.launch {
+                            isLoading = true
+                            try {
+                                val result = firebaseAuthHelper.resetPassword(email)
+                                if (result.isSuccess) {
+                                    errorMessage = "Password reset email sent to $email"
+                                } else {
+                                    errorMessage = result.exceptionOrNull()?.message ?: "Failed to send reset email"
+                                }
+                            } catch (e: Exception) {
+                                errorMessage = e.message ?: "An error occurred"
+                            } finally {
+                                isLoading = false
+                            }
+                        }
+                    } else {
+                        errorMessage = "Please enter your email address first"
+                    }
+                }
+            )
+        }
+
+        // Login button with improved styling
+        Button(
+            onClick = {
+                if (email.isEmpty() || password.isEmpty()) {
+                    errorMessage = "Please enter both email and password"
+                    return@Button
+                }
+
+                coroutineScope.launch {
+                    isLoading = true
+                    try {
+                        val result = firebaseAuthHelper.signInWithEmailPassword(email, password)
+                        result.fold(
+                            onSuccess = {
+                                errorMessage = null
+                                onLoginSuccess()
+                            },
+                            onFailure = { e ->
+                                errorMessage = e.message ?: "Authentication failed"
+                            }
+                        )
+                    } catch (e: Exception) {
+                        errorMessage = e.message ?: "An error occurred"
+                    } finally {
+                        isLoading = false
+                    }
+                }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(54.dp)
+                .padding(vertical = 8.dp),
+            shape = RoundedCornerShape(12.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = primaryColor),
+            enabled = !isLoading
+        ) {
+            if (isLoading) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(24.dp),
+                    color = Color.White,
+                    strokeWidth = 2.dp
+                )
+            } else {
+                Text(
+                    "LOGIN",
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = 1.sp
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // OR divider
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            HorizontalDivider(
+                modifier = Modifier.weight(1f),
+                thickness = 1.dp,
+                color = Color(0xFFCCCCCC)
+            )
+            Text(
+                "OR",
+                fontSize = 14.sp,
+                color = Color(0xFF757575),
+                modifier = Modifier.padding(horizontal = 16.dp)
+            )
+            HorizontalDivider(
+                modifier = Modifier.weight(1f),
+                thickness = 1.dp,
+                color = Color(0xFFCCCCCC)
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+
+        // In LoginScreen.kt, replace the Google Sign-In button and its onClick handler:
+
+        Button(
+            onClick = {
+                val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                    .requestIdToken(context.getString(R.string.default_web_client_id))
+                    .requestEmail()
+                    .build()
+
+                val googleSignInClient = GoogleSignIn.getClient(context, gso)
+                // Clear previous account before signing in again
+                googleSignInClient.signOut().addOnCompleteListener {
+                    launcher.launch(googleSignInClient.signInIntent)
+                }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(48.dp),
+            shape = RoundedCornerShape(12.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = Color.White
+            ),
+            border = BorderStroke(1.dp, Color(0xFFCCCCCC))
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_google), // Make sure this resource exists
+                    contentDescription = "Google",
+                    tint = Color.Unspecified,
+                    modifier = Modifier.size(20.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    "Continue with Google",
+                    color = Color(0xFF4A4A4A)
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Spacer(modifier = Modifier.weight(1f))
+
+        // Register link
+        Row(
+            modifier = Modifier.padding(vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                "Don't have an account? ",
+                fontSize = 14.sp,
+                color = Color(0xFF757575)
+            )
+            Text(
+                "Sign Up",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                color = primaryColor,
+                modifier = Modifier.clickable { onRegisterClick() }
+            )
+        }
+
+        // Footer with help
+        TextButton(
+            onClick = { /* Show Help */ },
+            contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Info,
+                contentDescription = "Help",
+                tint = primaryColor,
+                modifier = Modifier.size(18.dp)
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            Text(
+                "Need Help?",
+                color = iconColor,
+                fontSize = 12.sp
+            )
+        }
+        Spacer(modifier = Modifier.weight(1f))
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            TextButton(
+                onClick = { /* Show Help */ },
+                contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Info,
+                    contentDescription = "Help",
+                    tint = primaryColor,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    "Need Help?",
+                    color = iconColor,
+                    fontSize = 12.sp
+                )
+            }
+
+            IconButton(onClick = { /* Toggle Dark Mode */ }) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_dark_mode),
+                    contentDescription = "Dark Mode",
+                    tint = iconColor,
+                    modifier = Modifier.size(22.dp)
+                )
+            }
+        }
+    }
+}

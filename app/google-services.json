@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "601925026650",
+    "project_id": "flutter-ai-playground-5e743",
+    "storage_bucket": "flutter-ai-playground-5e743.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:601925026650:android:10f4a2b44db4a75ee86963",
+        "android_client_info": {
+          "package_name": "com.proteam.aiskincareadvisor"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB1AalV8rn0aFpPZyYUsy0c7BAv-vKB20A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
