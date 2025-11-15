@@ -3,13 +3,15 @@ package com.proteam.aiskincareadvisor.ui.theme
 import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.*
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.dynamicDarkColorScheme
+import androidx.compose.material3.dynamicLightColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
@@ -20,27 +22,43 @@ import com.proteam.aiskincareadvisor.data.preferences.ThemeMode
 import com.proteam.aiskincareadvisor.data.viewmodel.ThemeViewModel
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80,
+    primary = PrimaryOrange,
+    onPrimary = TextMain,
+
+    secondary = SecondaryGreen,
+    onSecondary = TextMain,
+
+    tertiary = AccentBlue,
+    onTertiary = TextMain,
+
     background = Color(0xFF121212),
-    surface = Color(0xFF1E1E1E),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
     onBackground = Color.White,
-    onSurface = Color.White
+
+    surface = Color(0xFF1E1E1E),
+    onSurface = Color.White,
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40,
-    background = Color.White,
-    surface = Color(0xFFF8F8F8),
+    primary = PrimaryOrange,
     onPrimary = Color.White,
-    onSecondary = Color.White,
-    onBackground = Color.Black,
-    onSurface = Color.Black
+
+    secondary = SecondaryGreen,
+    onSecondary = TextMain,
+
+    tertiary = AccentBlue,
+    onTertiary = TextMain,
+
+    background = ScreenBackground,
+    onBackground = TextMain,
+
+    surface = CardBackground,
+    onSurface = TextMain,
+
+    surfaceVariant = AccentPeach,
+    onSurfaceVariant = TextSecondary,
+
+    error = Color(0xFFBA1A1A),
+    onError = Color.White,
 )
 
 @Composable
@@ -49,15 +67,15 @@ fun AISkincareTheme(
     content: @Composable () -> Unit
 ) {
     val themeMode by themeViewModel.themeMode.collectAsState()
-    val useDynamicColors by themeViewModel.useDynamicColors.collectAsState()
-    
+
+    val useDynamicColors = false
+
     val darkTheme = when (themeMode) {
         ThemeMode.LIGHT -> false
         ThemeMode.DARK -> true
         ThemeMode.SYSTEM -> isSystemInDarkTheme()
-        else -> isSystemInDarkTheme() // Fallback to system default
     }
-    
+
     val colorScheme = when {
         useDynamicColors && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current
@@ -72,13 +90,15 @@ fun AISkincareTheme(
         SideEffect {
             val window = (view.context as Activity).window
             window.statusBarColor = colorScheme.primary.toArgb()
-            WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
+            WindowCompat.getInsetsController(window, view)
+                .isAppearanceLightStatusBars = !darkTheme
         }
     }
 
     MaterialTheme(
         colorScheme = colorScheme,
         typography = Typography,
+        shapes = AppShapes,
         content = content
     )
 }

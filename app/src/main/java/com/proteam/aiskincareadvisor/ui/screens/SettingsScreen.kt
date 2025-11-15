@@ -34,18 +34,32 @@ fun SettingsScreen(
 ) {
     val themeMode by themeViewModel.themeMode.collectAsState()
     val useDynamicColors by themeViewModel.useDynamicColors.collectAsState()
-    
+    val chipColors = FilterChipDefaults.filterChipColors(
+        containerColor = MaterialTheme.colorScheme.surface,                      // 未选底色
+        selectedContainerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f), // 选中时淡淡主色底
+        labelColor = MaterialTheme.colorScheme.onSurface,
+        selectedLabelColor = MaterialTheme.colorScheme.primary,
+        iconColor = MaterialTheme.colorScheme.onSurface,
+        selectedLeadingIconColor = MaterialTheme.colorScheme.primary
+    )
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Settings") },
+                title = { Text("Settings", style = MaterialTheme.typography.titleLarge) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                     }
-                }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.background,
+                    titleContentColor = MaterialTheme.colorScheme.onBackground,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onBackground
+                )
             )
-        }
+        },
+        containerColor = MaterialTheme.colorScheme.background
     ) { padding ->
         Column(
             modifier = Modifier
@@ -59,6 +73,7 @@ fun SettingsScreen(
                 text = "Appearance",
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
             
@@ -66,9 +81,10 @@ fun SettingsScreen(
             Text(
                 text = "Theme Mode",
                 style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f),
                 modifier = Modifier.padding(bottom = 8.dp)
             )
-            
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -84,9 +100,10 @@ fun SettingsScreen(
                             if (themeMode == ThemeMode.LIGHT) Icons.Filled.LightMode else Icons.Outlined.LightMode,
                             contentDescription = "Light Mode"
                         )
-                    }
+                    },
+                    colors = chipColors                    // ⭐ 关键：用我们定义的颜色
                 )
-                
+
                 FilterChip(
                     selected = themeMode == ThemeMode.DARK,
                     onClick = { themeViewModel.setThemeMode(ThemeMode.DARK) },
@@ -96,9 +113,10 @@ fun SettingsScreen(
                             if (themeMode == ThemeMode.DARK) Icons.Filled.DarkMode else Icons.Outlined.DarkMode,
                             contentDescription = "Dark Mode"
                         )
-                    }
+                    },
+                    colors = chipColors
                 )
-                
+
                 FilterChip(
                     selected = themeMode == ThemeMode.SYSTEM,
                     onClick = { themeViewModel.setThemeMode(ThemeMode.SYSTEM) },
@@ -108,7 +126,8 @@ fun SettingsScreen(
                             Icons.Outlined.PhoneAndroid,
                             contentDescription = "System Default"
                         )
-                    }
+                    },
+                    colors = chipColors
                 )
             }
             
@@ -127,6 +146,7 @@ fun SettingsScreen(
                         Icon(
                             Icons.Default.Palette,
                             contentDescription = "Dynamic Colors",
+                            tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.padding(end = 16.dp)
                         )
                         Text(

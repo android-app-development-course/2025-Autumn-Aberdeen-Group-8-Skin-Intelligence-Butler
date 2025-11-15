@@ -35,13 +35,15 @@ fun ProductDetailDialog(
     onDismiss: () -> Unit
 ) {
     val uriHandler = LocalUriHandler.current
-    
+
     Dialog(onDismissRequest = onDismiss) {
         Card(
             modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(max = 600.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface  // 用主题卡片背景色
+            ),
             shape = RoundedCornerShape(16.dp),
             elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
         ) {
@@ -67,7 +69,7 @@ fun ProductDetailDialog(
                         modifier = Modifier.fillMaxSize(),
                         contentScale = ContentScale.Crop
                     )
-                    
+
                     // Close button
                     IconButton(
                         onClick = onDismiss,
@@ -75,17 +77,20 @@ fun ProductDetailDialog(
                             .align(Alignment.TopEnd)
                             .padding(8.dp)
                             .size(36.dp)
-                            .background(Color.White.copy(alpha = 0.7f), CircleShape)
+                            .background(
+                                MaterialTheme.colorScheme.surface.copy(alpha = 0.7f), // 马卡龙卡片浅浮层
+                                CircleShape
+                            )
                     ) {
                         Icon(
-                            painter = painterResource(id = R.drawable.ic_search), // Use a close icon
+                            painter = painterResource(id = R.drawable.ic_search), // TODO: 换成真正的关闭图标
                             contentDescription = "Close",
-                            tint = Color.Black,
+                            tint = textPrimaryColor,   // 用主题文本主色，而不是纯黑
                             modifier = Modifier.size(20.dp)
                         )
                     }
                 }
-                
+
                 // Product Details
                 Column(
                     modifier = Modifier
@@ -99,9 +104,9 @@ fun ProductDetailDialog(
                         fontWeight = FontWeight.Bold,
                         color = textPrimaryColor
                     )
-                    
+
                     Spacer(modifier = Modifier.height(8.dp))
-                    
+
                     // Price
                     Text(
                         text = product.price,
@@ -109,9 +114,9 @@ fun ProductDetailDialog(
                         fontWeight = FontWeight.SemiBold,
                         color = primaryColor
                     )
-                    
+
                     Spacer(modifier = Modifier.height(16.dp))
-                    
+
                     // Category
                     Row(
                         verticalAlignment = Alignment.CenterVertically
@@ -122,16 +127,16 @@ fun ProductDetailDialog(
                             fontWeight = FontWeight.Medium,
                             color = textPrimaryColor
                         )
-                        
+
                         Text(
                             text = product.category,
                             fontSize = 14.sp,
                             color = textSecondaryColor
                         )
                     }
-                    
+
                     Spacer(modifier = Modifier.height(8.dp))
-                    
+
                     // Skin Types
                     if (product.skinTypes.isNotEmpty()) {
                         Row(
@@ -143,17 +148,17 @@ fun ProductDetailDialog(
                                 fontWeight = FontWeight.Medium,
                                 color = textPrimaryColor
                             )
-                            
+
                             Text(
                                 text = product.skinTypes.joinToString(", "),
                                 fontSize = 14.sp,
                                 color = textSecondaryColor
                             )
                         }
-                        
+
                         Spacer(modifier = Modifier.height(16.dp))
                     }
-                    
+
                     // Description
                     Text(
                         text = "Description",
@@ -161,21 +166,21 @@ fun ProductDetailDialog(
                         fontWeight = FontWeight.Bold,
                         color = textPrimaryColor
                     )
-                    
+
                     Spacer(modifier = Modifier.height(4.dp))
-                    
+
                     Text(
                         text = product.description,
                         fontSize = 14.sp,
                         color = textSecondaryColor,
                         lineHeight = 20.sp
                     )
-                    
+
                     Spacer(modifier = Modifier.height(24.dp))
-                    
+
                     // Buy Button
                     Button(
-                        onClick = { 
+                        onClick = {
                             if (product.buyLink.isNotEmpty()) {
                                 try {
                                     uriHandler.openUri(product.buyLink)
@@ -203,4 +208,4 @@ fun ProductDetailDialog(
             }
         }
     }
-} 
+}

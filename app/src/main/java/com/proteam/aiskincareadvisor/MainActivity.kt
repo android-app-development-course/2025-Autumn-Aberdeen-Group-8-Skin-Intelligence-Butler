@@ -5,15 +5,14 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.proteam.aiskincareadvisor.data.auth.FirebaseAuthHelper
+import com.proteam.aiskincareadvisor.ui.screens.LoginScreen
+import com.proteam.aiskincareadvisor.ui.screens.RegisterScreen
 import com.proteam.aiskincareadvisor.ui.screens.SettingsScreen
 import com.proteam.aiskincareadvisor.ui.screens.SkincareHomeScreen
-import com.proteam.aiskincareadvisor.ui.screens.LoginScreen
 import com.proteam.aiskincareadvisor.ui.screens.main.MainScreen
-import com.proteam.aiskincareadvisor.ui.screens.RegisterScreen
-import com.proteam.aiskincareadvisor.ui.screens.main.ChangePasswordScreen
 import com.proteam.aiskincareadvisor.ui.theme.AISkincareTheme
 
 class MainActivity : ComponentActivity() {
@@ -69,10 +68,9 @@ fun AppNavigation() {
                         popUpTo("main") { inclusive = true }
                     }
                 }
-
             )
         }
-        
+
         composable("settings") {
             SettingsScreen(
                 onBack = { navController.popBackStack() }

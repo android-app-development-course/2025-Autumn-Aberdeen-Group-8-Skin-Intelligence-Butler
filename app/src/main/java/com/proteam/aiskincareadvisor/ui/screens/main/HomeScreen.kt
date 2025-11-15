@@ -11,16 +11,13 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -29,7 +26,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.google.firebase.firestore.FirebaseFirestore
@@ -47,12 +43,10 @@ fun HomeScreen(navController: NavController) {
     val historyViewModel: SkinHistoryViewModel = viewModel()
     val latestResult by historyViewModel.latestResult.collectAsState()
 
-    val primaryColor = Color(0xFF7C3AED)
-
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF5F5F5))
+            .background(MaterialTheme.colorScheme.background)
             .padding(bottom = 16.dp)
     ) {
         // Welcome section
@@ -82,7 +76,7 @@ fun HomeScreen(navController: NavController) {
 
         // Recommended products
         item {
-            RecommendedProductsSection(navController= navController)
+            RecommendedProductsSection(navController = navController)
         }
 
         // Tips and advice
@@ -94,7 +88,8 @@ fun HomeScreen(navController: NavController) {
 
 @Composable
 fun WelcomeSection(onAnalyzeClick: () -> Unit) {
-    val primaryColor = Color(0xFF7C3AED)
+    val primaryColor = MaterialTheme.colorScheme.primary
+    val onPrimary = MaterialTheme.colorScheme.onPrimary
 
     Box(
         modifier = Modifier
@@ -109,16 +104,16 @@ fun WelcomeSection(onAnalyzeClick: () -> Unit) {
             verticalArrangement = Arrangement.Center
         ) {
             Text(
-                "Chào ngày mới!",
+                "Good morning!",
                 fontSize = 24.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.White
+                color = onPrimary
             )
 
             Text(
-                "Hãy để Lemmie giúp bạn chăm sóc làn da tốt hơn mỗi ngày",
+                "Let Lemmie help you take better care of your skin every day.",
                 fontSize = 16.sp,
-                color = Color.White,
+                color = onPrimary,
                 modifier = Modifier.padding(top = 8.dp)
             )
 
@@ -129,12 +124,12 @@ fun WelcomeSection(onAnalyzeClick: () -> Unit) {
                 modifier = Modifier.height(48.dp),
                 shape = RoundedCornerShape(24.dp),
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = Color.White
+                    containerColor = onPrimary,
+                    contentColor = primaryColor
                 )
             ) {
                 Text(
-                    "Phân tích da ngay",
-                    color = primaryColor,
+                    "Start skin analysis",
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -152,7 +147,10 @@ fun SkinSummaryCard(timestamp: Long, skinType: String, condition: String, onClic
             .fillMaxWidth()
             .padding(16.dp)
             .clickable(onClick = onClick),
-        shape = RoundedCornerShape(12.dp)
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        )
     ) {
         Column(
             modifier = Modifier
@@ -165,15 +163,16 @@ fun SkinSummaryCard(timestamp: Long, skinType: String, condition: String, onClic
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    "Phân tích gần nhất",
+                    "Latest analysis",
                     fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp
+                    fontSize = 16.sp,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
 
                 Text(
                     formattedDate,
                     fontSize = 14.sp,
-                    color = Color.Gray
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                 )
             }
 
@@ -185,27 +184,29 @@ fun SkinSummaryCard(timestamp: Long, skinType: String, condition: String, onClic
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        "Loại da:",
+                        "Skin type:",
                         fontSize = 14.sp,
-                        color = Color.Gray
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                     )
                     Text(
                         skinType,
                         fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
 
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        "Tình trạng:",
+                        "Condition:",
                         fontSize = 14.sp,
-                        color = Color.Gray
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
                     )
                     Text(
                         condition,
                         fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
             }
@@ -213,10 +214,10 @@ fun SkinSummaryCard(timestamp: Long, skinType: String, condition: String, onClic
             Spacer(modifier = Modifier.height(12.dp))
 
             Text(
-                "Xem chi tiết >",
+                "View details >",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF7C3AED),
+                color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.align(Alignment.End)
             )
         }
@@ -231,9 +232,10 @@ fun QuickActionsSection(
 ) {
     Column(modifier = Modifier.padding(16.dp)) {
         Text(
-            "Truy cập nhanh",
+            "Quick access",
             fontSize = 18.sp,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onBackground
         )
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -244,7 +246,7 @@ fun QuickActionsSection(
         ) {
             QuickActionButton(
                 icon = R.drawable.ic_camera,
-                title = "Phân tích",
+                title = "Analysis",
                 modifier = Modifier.weight(1f),
                 onClick = onAnalyzeClick
             )
@@ -253,7 +255,7 @@ fun QuickActionsSection(
 
             QuickActionButton(
                 icon = R.drawable.ic_spa,
-                title = "Quy trình",
+                title = "Routine",
                 modifier = Modifier.weight(1f),
                 onClick = onRoutineClick
             )
@@ -283,8 +285,8 @@ fun QuickActionButton(
             .height(100.dp),
         shape = RoundedCornerShape(12.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = Color.White,
-            contentColor = Color(0xFF7C3AED)
+            containerColor = MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.primary
         )
     ) {
         Column(
@@ -295,7 +297,7 @@ fun QuickActionButton(
                 painter = painterResource(id = icon),
                 contentDescription = title,
                 modifier = Modifier.size(32.dp),
-                tint = Color(0xFF7C3AED)
+                tint = MaterialTheme.colorScheme.primary
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -303,7 +305,8 @@ fun QuickActionButton(
             Text(
                 title,
                 fontSize = 14.sp,
-                fontWeight = FontWeight.Medium
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurface
             )
         }
     }
@@ -332,7 +335,7 @@ fun RecommendedProductsSection(
                     document.toObject(Product::class.java)?.let {
                         productsList.add(it.copy(id = document.id))
                     }
-                } catch (e: Exception) {
+                } catch (_: Exception) {
                     // Handle error silently
                 }
             }
@@ -346,7 +349,10 @@ fun RecommendedProductsSection(
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp),
         shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        )
     ) {
         Column(
             modifier = Modifier
@@ -360,17 +366,17 @@ fun RecommendedProductsSection(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "Sản phẩm gợi ý",
+                    text = "Recommended products",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF7C3AED)
+                    color = MaterialTheme.colorScheme.primary
                 )
 
                 TextButton(onClick = { navController.navigate("products") }) {
                     Text(
-                        text = "Xem tất cả",
+                        text = "See all",
                         fontSize = 14.sp,
-                        color = Color(0xFF7C3AED)
+                        color = MaterialTheme.colorScheme.primary
                     )
                 }
             }
@@ -385,7 +391,9 @@ fun RecommendedProductsSection(
                             .height(180.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        CircularProgressIndicator(color = Color(0xFF7C3AED))
+                        CircularProgressIndicator(
+                            color = MaterialTheme.colorScheme.primary
+                        )
                     }
                 }
                 recommendedProducts.isEmpty() -> {
@@ -397,19 +405,22 @@ fun RecommendedProductsSection(
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
-                                text = "Chưa có sản phẩm gợi ý",
+                                text = "No recommended products yet.",
                                 fontSize = 16.sp,
-                                color = Color.Gray,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                                 textAlign = TextAlign.Center
                             )
 
                             Button(
                                 onClick = { navController.navigate("skin_analysis") },
                                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = Color(0xFF7C3AED)
+                                    containerColor = MaterialTheme.colorScheme.primary
                                 )
                             ) {
-                                Text("Phân tích da ngay")
+                                Text(
+                                    "Analyze your skin now",
+                                    color = MaterialTheme.colorScheme.onPrimary
+                                )
                             }
                         }
                     }
@@ -432,14 +443,16 @@ fun RecommendedProductsSection(
 @Composable
 fun RecommendedProductItem(product: Product) {
     var showDetailDialog by remember { mutableStateOf(false) }
-    
+
     Card(
         modifier = Modifier
             .width(160.dp)
             .height(220.dp)
             .clickable { showDetailDialog = true },
         shape = RoundedCornerShape(8.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        ),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column {
@@ -470,14 +483,15 @@ fun RecommendedProductItem(product: Product) {
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Medium,
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
 
                 // For skin types
                 Text(
                     text = product.skinTypes.joinToString(", "),
                     fontSize = 12.sp,
-                    color = Color.Gray,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.padding(vertical = 4.dp)
@@ -488,19 +502,19 @@ fun RecommendedProductItem(product: Product) {
                     text = product.price,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF7C3AED)
+                    color = MaterialTheme.colorScheme.primary
                 )
             }
         }
     }
-    
+
     // Show product detail dialog when clicked
     if (showDetailDialog) {
         ProductDetailDialog(
             product = product,
-            primaryColor = Color(0xFF4CAF50),
-            textPrimaryColor = Color(0xFF333333),
-            textSecondaryColor = Color(0xFF757575),
+            primaryColor = MaterialTheme.colorScheme.primary,
+            textPrimaryColor = MaterialTheme.colorScheme.onSurface,
+            textSecondaryColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
             onDismiss = { showDetailDialog = false }
         )
     }
@@ -509,16 +523,19 @@ fun RecommendedProductItem(product: Product) {
 @Composable
 fun DailyTipsSection() {
     val tips = listOf(
-        "Uống đủ nước mỗi ngày giúp làn da khỏe mạnh và tươi trẻ",
-        "Luôn sử dụng kem chống nắng, kể cả khi ở trong nhà",
-        "Đắp mặt nạ 1-2 lần/tuần để cấp ẩm và làm dịu da"
+        "Drinking enough water every day keeps your skin healthy and glowing.",
+        "Always wear sunscreen, even when you stay indoors.",
+        "Use a face mask 1–2 times a week to hydrate and soothe your skin."
     )
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp),
-        shape = RoundedCornerShape(12.dp)
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        )
     ) {
         Column(
             modifier = Modifier
@@ -531,21 +548,22 @@ fun DailyTipsSection() {
                 Icon(
                     imageVector = Icons.Default.Info,
                     contentDescription = "Tips",
-                    tint = Color(0xFF7C3AED)
+                    tint = MaterialTheme.colorScheme.primary
                 )
 
                 Spacer(modifier = Modifier.width(8.dp))
 
                 Text(
-                    "Tips chăm sóc da",
+                    "Skincare tips",
                     fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
             }
 
             Divider(
                 modifier = Modifier.padding(vertical = 12.dp),
-                color = Color.LightGray
+                color = MaterialTheme.colorScheme.outlineVariant
             )
 
             tips.forEach { tip ->
@@ -557,7 +575,7 @@ fun DailyTipsSection() {
                         modifier = Modifier
                             .size(8.dp)
                             .clip(CircleShape)
-                            .background(Color(0xFF7C3AED))
+                            .background(MaterialTheme.colorScheme.primary)
                             .align(Alignment.CenterVertically)
                     )
 
@@ -566,7 +584,8 @@ fun DailyTipsSection() {
                     Text(
                         text = tip,
                         fontSize = 14.sp,
-                        lineHeight = 20.sp
+                        lineHeight = 20.sp,
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
             }

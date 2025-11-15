@@ -9,11 +9,22 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -29,9 +40,7 @@ fun ChangePasswordScreen(
     navController: NavController,
     authHelper: FirebaseAuthHelper = remember { FirebaseAuthHelper() }
 ) {
-    val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val primaryColor = MaterialTheme.colorScheme.primary
 
     var currentPassword by remember { mutableStateOf("") }
     var newPassword by remember { mutableStateOf("") }
@@ -81,13 +90,25 @@ fun ChangePasswordScreen(
             label = { Text("Current Password") },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
-            visualTransformation = if (currentPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            visualTransformation = if (currentPasswordVisible) {
+                VisualTransformation.None
+            } else {
+                PasswordVisualTransformation()
+            },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             trailingIcon = {
                 IconButton(onClick = { currentPasswordVisible = !currentPasswordVisible }) {
                     Icon(
-                        imageVector = if (currentPasswordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                        contentDescription = if (currentPasswordVisible) "Hide password" else "Show password"
+                        imageVector = if (currentPasswordVisible) {
+                            Icons.Default.VisibilityOff
+                        } else {
+                            Icons.Default.Visibility
+                        },
+                        contentDescription = if (currentPasswordVisible) {
+                            "Hide password"
+                        } else {
+                            "Show password"
+                        }
                     )
                 }
             }
@@ -102,13 +123,25 @@ fun ChangePasswordScreen(
             label = { Text("New Password") },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
-            visualTransformation = if (newPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            visualTransformation = if (newPasswordVisible) {
+                VisualTransformation.None
+            } else {
+                PasswordVisualTransformation()
+            },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             trailingIcon = {
                 IconButton(onClick = { newPasswordVisible = !newPasswordVisible }) {
                     Icon(
-                        imageVector = if (newPasswordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                        contentDescription = if (newPasswordVisible) "Hide password" else "Show password"
+                        imageVector = if (newPasswordVisible) {
+                            Icons.Default.VisibilityOff
+                        } else {
+                            Icons.Default.Visibility
+                        },
+                        contentDescription = if (newPasswordVisible) {
+                            "Hide password"
+                        } else {
+                            "Show password"
+                        }
                     )
                 }
             }
@@ -123,13 +156,25 @@ fun ChangePasswordScreen(
             label = { Text("Confirm New Password") },
             modifier = Modifier.fillMaxWidth(),
             singleLine = true,
-            visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+            visualTransformation = if (confirmPasswordVisible) {
+                VisualTransformation.None
+            } else {
+                PasswordVisualTransformation()
+            },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
             trailingIcon = {
                 IconButton(onClick = { confirmPasswordVisible = !confirmPasswordVisible }) {
                     Icon(
-                        imageVector = if (confirmPasswordVisible) Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                        contentDescription = if (confirmPasswordVisible) "Hide password" else "Show password"
+                        imageVector = if (confirmPasswordVisible) {
+                            Icons.Default.VisibilityOff
+                        } else {
+                            Icons.Default.Visibility
+                        },
+                        contentDescription = if (confirmPasswordVisible) {
+                            "Hide password"
+                        } else {
+                            "Show password"
+                        }
                     )
                 }
             }
@@ -138,18 +183,18 @@ fun ChangePasswordScreen(
         Spacer(modifier = Modifier.height(24.dp))
 
         // Error message
-        if (errorMessage != null) {
+        errorMessage?.let {
             Text(
-                text = errorMessage!!,
+                text = it,
                 color = MaterialTheme.colorScheme.error,
                 modifier = Modifier.padding(vertical = 8.dp)
             )
         }
 
         // Success message
-        if (successMessage != null) {
+        successMessage?.let {
             Text(
-                text = successMessage!!,
+                text = it,
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.padding(vertical = 8.dp)
             )
@@ -158,20 +203,20 @@ fun ChangePasswordScreen(
         // Change Password button
         Button(
             onClick = {
-                // Clear previous messages
                 errorMessage = null
                 successMessage = null
 
-                // Validate inputs
                 when {
-                    currentPassword.isEmpty() -> errorMessage = "Please enter your current password"
-                    newPassword.isEmpty() -> errorMessage = "Please enter a new password"
-                    newPassword.length < 6 -> errorMessage = "Password must be at least 6 characters"
-                    newPassword != confirmPassword -> errorMessage = "Passwords do not match"
+                    currentPassword.isEmpty() ->
+                        errorMessage = "Please enter your current password"
+                    newPassword.isEmpty() ->
+                        errorMessage = "Please enter a new password"
+                    newPassword.length < 6 ->
+                        errorMessage = "Password must be at least 6 characters"
+                    newPassword != confirmPassword ->
+                        errorMessage = "Passwords do not match"
                     else -> {
-                        // Attempt to change password
                         isLoading = true
-                        // Inside the Button onClick handler
                         scope.launch {
                             try {
                                 authHelper.reauthenticateAndChangePassword(
@@ -180,7 +225,6 @@ fun ChangePasswordScreen(
                                     onSuccess = {
                                         successMessage = "Password changed successfully"
                                         isLoading = false
-                                        // Clear fields after successful change
                                         currentPassword = ""
                                         newPassword = ""
                                         confirmPassword = ""

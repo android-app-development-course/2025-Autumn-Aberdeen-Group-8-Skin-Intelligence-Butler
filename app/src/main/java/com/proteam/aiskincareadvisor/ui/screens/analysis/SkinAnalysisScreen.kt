@@ -43,7 +43,10 @@ fun SkinAnalysisScreen() {
 
     val hasCameraPermission = remember {
         mutableStateOf(
-            ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.CAMERA
+            ) == PackageManager.PERMISSION_GRANTED
         )
     }
 
@@ -53,9 +56,10 @@ fun SkinAnalysisScreen() {
 
     val tempUri = remember { mutableStateOf<Uri?>(null) }
 
-    val cameraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
-        if (success) tempUri.value?.let(viewModel::setImage)
-    }
+    val cameraLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
+            if (success) tempUri.value?.let(viewModel::setImage)
+        }
 
     val galleryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) {
         it?.let(viewModel::setImage)
@@ -64,11 +68,17 @@ fun SkinAnalysisScreen() {
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)        // ✅ 用主题背景色
             .padding(16.dp)
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Phân tích làn da", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+        // 标题：用主题字体+主文字色
+        Text(
+            text = "Phân tích làn da",
+            style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
+            color = MaterialTheme.colorScheme.onBackground
+        )
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -78,20 +88,36 @@ fun SkinAnalysisScreen() {
                     if (!hasCameraPermission.value) {
                         cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
                     } else {
-                        val imageFile = File.createTempFile("IMG_${System.currentTimeMillis()}", ".jpg", context.cacheDir)
-                        val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", imageFile)
+                        val imageFile = File.createTempFile(
+                            "IMG_${System.currentTimeMillis()}",
+                            ".jpg",
+                            context.cacheDir
+                        )
+                        val uri = FileProvider.getUriForFile(
+                            context,
+                            "${context.packageName}.fileprovider",
+                            imageFile
+                        )
                         tempUri.value = uri
                         cameraLauncher.launch(uri)
                     }
                 },
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,          // ✅ 主色按钮
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                )
             ) {
                 Text("Chụp ảnh")
             }
 
             Button(
                 onClick = { galleryLauncher.launch("image/*") },
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,          // ✅ 同一按钮风格
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                )
             ) {
                 Text("Chọn từ thư viện")
             }
@@ -104,7 +130,10 @@ fun SkinAnalysisScreen() {
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(300.dp)
+                    .height(300.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface           // ✅ 卡片背景用主题 surface
+                )
             ) {
                 Image(
                     painter = rememberAsyncImagePainter(uri),
@@ -119,7 +148,11 @@ fun SkinAnalysisScreen() {
             Button(
                 onClick = { viewModel.analyzeSkin() },
                 enabled = !isLoading,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,          // ✅ 主色按钮
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                )
             ) {
                 Text("Phân tích ngay")
             }
@@ -128,23 +161,41 @@ fun SkinAnalysisScreen() {
         Spacer(modifier = Modifier.height(16.dp))
 
         if (isLoading) {
-            CircularProgressIndicator()
+            CircularProgressIndicator(
+                color = MaterialTheme.colorScheme.primary                       // ✅ 进度条用主色
+            )
         }
 
         errorMessage?.let {
-            Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(8.dp))
+            Text(
+                text = it,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(8.dp)
+            )
         }
 
         analysisResult?.let { result ->
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceVariant    // ✅ 用主题里的变体色
+                )
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    Text("Kết quả phân tích", fontWeight = FontWeight.Bold)
+                    Text(
+                        text = "Kết quả phân tích",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface              // ✅ 用卡片文字色
+                    )
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(result)
+                    Text(
+                        text = result,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.9f)
+                    )
                 }
             }
         }

@@ -33,13 +33,13 @@ fun AnalysisScreen(navController: NavController, onNavigateToAnalysis: () -> Uni
     val latestResult by viewModel.latestResult.collectAsState()
 
     Scaffold(
-
+        // 可以后续加 topBar 等
     ) { paddingValues ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .background(Color(0xFFF5F5F5)),
+                .background(MaterialTheme.colorScheme.background),   // ✅ 用主题背景色
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             item { LastScanHeader(latestResult?.timestamp) }
@@ -84,7 +84,10 @@ fun LastScanHeader(timestamp: Long?) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp),
-        shape = RoundedCornerShape(8.dp)
+        shape = RoundedCornerShape(8.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface      // ✅ 卡片背景
+        )
     ) {
         Column(
             modifier = Modifier
@@ -94,13 +97,14 @@ fun LastScanHeader(timestamp: Long?) {
             Text(
                 text = "Lần phân tích gần nhất",
                 fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onSurface          // ✅ 文字色跟随主题
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = formattedTime,
                 fontSize = 14.sp,
-                color = Color.Gray
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f) // ✅ 柔和灰
             )
         }
     }
@@ -118,20 +122,35 @@ fun SkinHealthSummarySection(
             .padding(horizontal = 16.dp, vertical = 8.dp),
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFFF3EFFF))
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant // ✅ 马卡龙卡片底
+        )
     ) {
         Column(modifier = Modifier.padding(20.dp)) {
             Text(
                 text = "TỔNG QUAN LÀN DA",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.SemiBold,
-                color = Color(0xFF7C3AED) // tím đậm
+                color = MaterialTheme.colorScheme.primary             // ✅ 主色标题
             )
             Spacer(modifier = Modifier.height(20.dp))
 
-            SummaryLine("Độ ẩm", hydration ?: "Không có dữ liệu", Color(0xFF2196F3))
-            SummaryLine("Độ dầu", oil ?: "Không có dữ liệu", Color(0xFFFFC107))
-            SummaryLine("Tổng thể", condition ?: "Không có dữ liệu", Color(0xFF4CAF50))
+            // 用 primary / secondary / tertiary 做三段色
+            SummaryLine(
+                label = "Độ ẩm",
+                value = hydration ?: "Không có dữ liệu",
+                valueColor = MaterialTheme.colorScheme.tertiary
+            )
+            SummaryLine(
+                label = "Độ dầu",
+                value = oil ?: "Không có dữ liệu",
+                valueColor = MaterialTheme.colorScheme.secondary
+            )
+            SummaryLine(
+                label = "Tổng thể",
+                value = condition ?: "Không có dữ liệu",
+                valueColor = MaterialTheme.colorScheme.primary
+            )
         }
     }
 }
@@ -147,7 +166,7 @@ fun SummaryLine(label: String, value: String, valueColor: Color) {
         Text(
             text = "$label: ",
             fontSize = 14.sp,
-            color = Color.Gray,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f), // ✅ 柔和标签色
             modifier = Modifier.width(80.dp)
         )
         Text(
@@ -159,15 +178,16 @@ fun SummaryLine(label: String, value: String, valueColor: Color) {
     }
 }
 
-
-
 @Composable
 fun DetailedBreakdownSection(skinType: String?, concerns: List<String>) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
-        shape = RoundedCornerShape(8.dp)
+        shape = RoundedCornerShape(8.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface      // ✅ 统一卡片底
+        )
     ) {
         Column(
             modifier = Modifier
@@ -178,15 +198,19 @@ fun DetailedBreakdownSection(skinType: String?, concerns: List<String>) {
                 text = "CHI TIẾT PHÂN TÍCH",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF7C3AED)
+                color = MaterialTheme.colorScheme.primary           // ✅ 主色标题
             )
             Spacer(modifier = Modifier.height(16.dp))
             skinType?.let {
-                BreakdownItem("Loại da", it, R.drawable.ic_lock) // Update with appropriate icon
+                BreakdownItem("Loại da", it, R.drawable.ic_lock) // TODO: 更新为合适图标
             }
             if (concerns.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(8.dp))
-                BreakdownItem("Vấn đề da", concerns.joinToString(", "), R.drawable.ic_lock) // Update with appropriate icon
+                BreakdownItem(
+                    "Vấn đề da",
+                    concerns.joinToString(", "),
+                    R.drawable.ic_lock
+                ) // TODO: 同上
             }
         }
     }
@@ -204,20 +228,31 @@ fun BreakdownItem(label: String, value: String, iconResource: Int) {
             modifier = Modifier
                 .size(40.dp)
                 .clip(CircleShape)
-                .background(Color(0xFFF0F0F0)),
+                .background(
+                    MaterialTheme.colorScheme.surfaceVariant        // ✅ 圆形浅底
+                ),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 painter = painterResource(id = iconResource),
                 contentDescription = label,
-                tint = Color(0xFF7C3AED),
+                tint = MaterialTheme.colorScheme.primary,           // ✅ 图标主色
                 modifier = Modifier.size(24.dp)
             )
         }
         Spacer(modifier = Modifier.width(16.dp))
         Column {
-            Text(text = label, fontSize = 16.sp, fontWeight = FontWeight.Medium)
-            Text(text = value, fontSize = 14.sp, color = Color.Gray)
+            Text(
+                text = label,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Medium,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+            Text(
+                text = value,
+                fontSize = 14.sp,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f) // ✅ 次级文字色
+            )
         }
     }
 }
@@ -228,7 +263,10 @@ fun TipsAndInsightsSection(tips: List<String>) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp),
-        shape = RoundedCornerShape(8.dp)
+        shape = RoundedCornerShape(8.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surface
+        )
     ) {
         Column(
             modifier = Modifier
@@ -239,7 +277,7 @@ fun TipsAndInsightsSection(tips: List<String>) {
                 text = "MẸO & GỢI Ý",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF7C3AED)
+                color = MaterialTheme.colorScheme.primary          // ✅ 主色标题
             )
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -268,14 +306,14 @@ fun TipItem(tip: String) {
             modifier = Modifier
                 .size(8.dp)
                 .clip(CircleShape)
-                .background(Color(0xFF7C3AED))
+                .background(MaterialTheme.colorScheme.primary)      // ✅ 小圆点用主色
                 .align(Alignment.CenterVertically)
         )
         Spacer(modifier = Modifier.width(12.dp))
         Text(
             text = tip,
             fontSize = 14.sp,
-            color = Color.Black,
+            color = MaterialTheme.colorScheme.onBackground,        // ✅ 主文字色
             lineHeight = 20.sp
         )
     }
@@ -286,21 +324,24 @@ fun ReanalyzeButton(onReanalyze: () -> Unit) {
     Button(
         onClick = onReanalyze,
         modifier = Modifier.fillMaxWidth(),
-        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF7C3AED)),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.primary,    // ✅ 马卡龙主色按钮
+            contentColor = MaterialTheme.colorScheme.onPrimary
+        ),
         shape = RoundedCornerShape(8.dp),
         contentPadding = PaddingValues(vertical = 12.dp)
     ) {
         Icon(
             painter = painterResource(id = R.drawable.ic_camera),
             contentDescription = null,
-            tint = Color.White
+            tint = MaterialTheme.colorScheme.onPrimary
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = "Phân tích lại",
             fontSize = 16.sp,
             fontWeight = FontWeight.Bold,
-            color = Color.White
+            color = MaterialTheme.colorScheme.onPrimary
         )
     }
 }
@@ -311,19 +352,22 @@ fun ViewRoutineRecommendationsButton(onClick: () -> Unit) {
         onClick = onClick,
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(8.dp),
-        border = BorderStroke(1.dp, Color(0xFF7C3AED)),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary), // ✅ 主色描边
+        colors = ButtonDefaults.outlinedButtonColors(
+            contentColor = MaterialTheme.colorScheme.primary              // ✅ 图标+文字主色
+        ),
         contentPadding = PaddingValues(vertical = 12.dp)
     ) {
         Icon(
             painter = painterResource(id = R.drawable.ic_spa),
             contentDescription = null,
-            tint = Color(0xFF7C3AED)
+            tint = MaterialTheme.colorScheme.primary
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = "Xem gợi ý chăm sóc da",
             fontSize = 16.sp,
-            color = Color(0xFF7C3AED)
+            color = MaterialTheme.colorScheme.primary
         )
     }
 }

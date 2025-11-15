@@ -5,24 +5,19 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.ClickableText
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
-import androidx.compose.ui.res.painterResource
-import com.proteam.aiskincareadvisor.R
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -31,8 +26,15 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.proteam.aiskincareadvisor.R
 import com.proteam.aiskincareadvisor.data.auth.FirebaseAuthHelper
 import kotlinx.coroutines.launch
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.rememberCoroutineScope
+//import com.proteam.aiskincareadvisor.ui.theme.AISkincareTheme
+
+
+
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
@@ -49,17 +51,20 @@ fun RegisterScreen(onLoginClick: () -> Unit = {}, onBack: () -> Unit = {}) {
     
     val firebaseAuthHelper = remember { FirebaseAuthHelper() }
     val coroutineScope = rememberCoroutineScope()
-    
-    val primaryColor = Color(0xFF7C3AED)
-    val iconColor = Color(0xFF4A4A4A)
-    val backgroundColor = Color(0xFFF5F0F7)
+
+    val primaryColor = MaterialTheme.colorScheme.primary
+    val iconColor = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.85f)
+    val backgroundColor = MaterialTheme.colorScheme.background
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(
                 brush = Brush.verticalGradient(
-                    colors = listOf(Color.White, backgroundColor)
+                    colors = listOf(
+                        MaterialTheme.colorScheme.background,
+                        MaterialTheme.colorScheme.surfaceVariant
+                    )
                 )
             )
     ) {
@@ -80,7 +85,7 @@ fun RegisterScreen(onLoginClick: () -> Unit = {}, onBack: () -> Unit = {}) {
                     Icon(
                         painter = painterResource(id = R.drawable.ic_arrow_back),
                         contentDescription = "Back",
-                        tint = Color(0xFF4A4A4A)
+                        tint = iconColor
                     )
                 }
             }
@@ -95,16 +100,15 @@ fun RegisterScreen(onLoginClick: () -> Unit = {}, onBack: () -> Unit = {}) {
 
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                "Create Your Account",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF4A4A4A)
+                text = "Create Your Account",
+                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+                color = MaterialTheme.colorScheme.onBackground
             )
 
             Text(
-                "Begin your personalized skincare journey",
-                fontSize = 14.sp,
-                color = Color(0xFF757575),
+                text = "Begin your personalized skincare journey",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(top = 8.dp, bottom = 24.dp)
             )
@@ -140,7 +144,8 @@ fun RegisterScreen(onLoginClick: () -> Unit = {}, onBack: () -> Unit = {}) {
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = primaryColor,
-                    unfocusedBorderColor = Color(0xFFCCCCCC)
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
+                    cursorColor = primaryColor
                 ),
                 isError = errorMessage != null && fullName.value.isEmpty()
             )
@@ -165,7 +170,8 @@ fun RegisterScreen(onLoginClick: () -> Unit = {}, onBack: () -> Unit = {}) {
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = primaryColor,
-                    unfocusedBorderColor = Color(0xFFCCCCCC)
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
+                    cursorColor = primaryColor
                 ),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
                 isError = errorMessage != null && email.value.isEmpty()
@@ -209,7 +215,8 @@ fun RegisterScreen(onLoginClick: () -> Unit = {}, onBack: () -> Unit = {}) {
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = primaryColor,
-                    unfocusedBorderColor = Color(0xFFCCCCCC)
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
+                    cursorColor = primaryColor
                 ),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 isError = errorMessage != null && (password.value.isEmpty() || password.value != confirmPassword.value)
@@ -253,7 +260,8 @@ fun RegisterScreen(onLoginClick: () -> Unit = {}, onBack: () -> Unit = {}) {
                 shape = RoundedCornerShape(12.dp),
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedBorderColor = primaryColor,
-                    unfocusedBorderColor = Color(0xFFCCCCCC)
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f),
+                    cursorColor = primaryColor
                 ),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
                 isError = errorMessage != null && (confirmPassword.value.isEmpty() || password.value != confirmPassword.value)
@@ -275,7 +283,7 @@ fun RegisterScreen(onLoginClick: () -> Unit = {}, onBack: () -> Unit = {}) {
                 Text(
                     "I agree to the Terms & Privacy Policy",
                     fontSize = 13.sp,
-                    color = Color(0xFF757575),
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f),
                     modifier = Modifier.padding(start = 4.dp)
                 )
             }
@@ -369,7 +377,7 @@ fun RegisterScreen(onLoginClick: () -> Unit = {}, onBack: () -> Unit = {}) {
                 Text(
                     "Already have an account? ",
                     fontSize = 14.sp,
-                    color = Color(0xFF757575)
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
                 )
                 Text(
                     "Log In",
@@ -402,8 +410,8 @@ fun RegisterScreen(onLoginClick: () -> Unit = {}, onBack: () -> Unit = {}) {
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        "Need Help?",
-                        color = iconColor,
+                        text = "Need Help?",
+                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.8f),
                         fontSize = 12.sp
                     )
                 }
@@ -421,8 +429,3 @@ fun RegisterScreen(onLoginClick: () -> Unit = {}, onBack: () -> Unit = {}) {
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun PreviewRegisterScreen() {
-    RegisterScreen()
-}

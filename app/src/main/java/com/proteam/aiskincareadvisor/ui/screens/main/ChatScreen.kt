@@ -11,8 +11,23 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Send
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalTextStyle
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -40,18 +55,14 @@ data class ProductRecommendation(
     val imageRes: Int
 )
 
-// Main Composable for the Chat Screen
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChatScreen(
     viewModel: ChatViewModel = viewModel(),
     onBack: () -> Unit = {}
 ) {
-    // Collect messages from view model
     val messages by viewModel.messages.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
-
-    // State for the text input
     var messageText by remember { mutableStateOf("") }
 
     Scaffold(
@@ -92,7 +103,7 @@ fun ChatScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .background(Color(0xFFF5F5F5))
+                .background(MaterialTheme.colorScheme.background)
         ) {
             // Chat Messages
             LazyColumn(
@@ -142,7 +153,10 @@ fun ChatMessageItem(message: ChatMessage) {
         Column(
             modifier = Modifier
                 .background(
-                    if (message.isFromUser) Color(0xFF9C27B0) else Color.White,
+                    if (message.isFromUser)
+                        MaterialTheme.colorScheme.primary
+                    else
+                        MaterialTheme.colorScheme.surface,
                     shape = RoundedCornerShape(12.dp)
                 )
                 .padding(12.dp)
@@ -150,7 +164,10 @@ fun ChatMessageItem(message: ChatMessage) {
             Text(
                 text = message.text,
                 fontSize = 16.sp,
-                color = if (message.isFromUser) Color.White else Color.Black
+                color = if (message.isFromUser)
+                    MaterialTheme.colorScheme.onPrimary
+                else
+                    MaterialTheme.colorScheme.onSurface
             )
 
             // Product Recommendation (if any)
@@ -173,7 +190,10 @@ fun ProductRecommendationItem(product: ProductRecommendation) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color(0xFFF0F0F0), RoundedCornerShape(8.dp))
+            .background(
+                MaterialTheme.colorScheme.surfaceVariant,
+                RoundedCornerShape(8.dp)
+            )
             .padding(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -194,7 +214,7 @@ fun ProductRecommendationItem(product: ProductRecommendation) {
             Text(
                 text = product.description,
                 fontSize = 12.sp,
-                color = Color.Gray
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }
@@ -229,8 +249,8 @@ fun QuickReplyButton(
         onClick = onClick,
         modifier = modifier.height(40.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = Color(0xFFE1BEE7),
-            disabledContainerColor = Color(0xFFEEDEF4)
+            containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f),
+            disabledContainerColor = MaterialTheme.colorScheme.surfaceVariant
         ),
         shape = RoundedCornerShape(20.dp),
         enabled = enabled
@@ -238,7 +258,10 @@ fun QuickReplyButton(
         Text(
             text = text,
             fontSize = 14.sp,
-            color = if (enabled) Color.Black else Color.Gray,
+            color = if (enabled)
+                MaterialTheme.colorScheme.onPrimary
+            else
+                MaterialTheme.colorScheme.onSurfaceVariant,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis
         )
@@ -256,7 +279,7 @@ fun ChatInputField(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color.White)
+            .background(MaterialTheme.colorScheme.surface)
             .padding(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -265,7 +288,10 @@ fun ChatInputField(
             onValueChange = onMessageTextChange,
             modifier = Modifier
                 .weight(1f)
-                .background(Color(0xFFF0F0F0), RoundedCornerShape(20.dp))
+                .background(
+                    MaterialTheme.colorScheme.surfaceVariant,
+                    RoundedCornerShape(20.dp)
+                )
                 .padding(horizontal = 16.dp, vertical = 12.dp),
             textStyle = LocalTextStyle.current.copy(fontSize = 16.sp),
             enabled = !isLoading,
@@ -274,7 +300,7 @@ fun ChatInputField(
                     Text(
                         text = "Type your message...",
                         fontSize = 16.sp,
-                        color = Color.Gray
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
                 innerTextField()
@@ -285,20 +311,20 @@ fun ChatInputField(
             onClick = onSendClick,
             modifier = Modifier
                 .clip(CircleShape)
-                .background(Color(0xFF9C27B0)),
+                .background(MaterialTheme.colorScheme.primary),
             enabled = !isLoading && messageText.isNotBlank()
         ) {
             if (isLoading) {
                 CircularProgressIndicator(
                     modifier = Modifier.size(24.dp),
-                    color = Color.White,
+                    color = MaterialTheme.colorScheme.onPrimary,
                     strokeWidth = 2.dp
                 )
             } else {
                 Icon(
                     imageVector = Icons.Default.Send,
                     contentDescription = "Send",
-                    tint = Color.White
+                    tint = MaterialTheme.colorScheme.onPrimary
                 )
             }
         }

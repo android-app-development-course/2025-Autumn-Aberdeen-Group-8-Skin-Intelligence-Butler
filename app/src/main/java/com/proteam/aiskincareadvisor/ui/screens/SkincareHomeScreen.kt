@@ -36,7 +36,8 @@ fun SkincareHomeScreen(
 
             Text(
                 text = "Your AI-powered skincare companion!",
-                style = MaterialTheme.typography.bodyMedium.copy(color = Color.Gray)
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.7f)
             )
 
             Image(
@@ -60,7 +61,11 @@ fun SkincareHomeScreen(
                 onClick = { onGetStartedClick() },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(50.dp)
+                    .height(50.dp),
+                shape = MaterialTheme.shapes.large,   // 使用统一圆角
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
             ) {
                 Text(text = "Get Started")
             }
@@ -69,7 +74,8 @@ fun SkincareHomeScreen(
 
             Text(
                 text = "Already have an account? Login",
-                style = MaterialTheme.typography.bodySmall.copy(color = Color.Blue),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.clickable { onLoginClick() }
             )
         }
