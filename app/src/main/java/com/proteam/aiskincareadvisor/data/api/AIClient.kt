@@ -9,6 +9,7 @@ import com.google.ai.client.generativeai.GenerativeModel
 
 object AIClient {
     private val key = AzureKeyCredential(BuildConfig.API_AI_TOKEN)
+
     private const val ENDPOINT = "https://models.github.ai/inference"
 
     val chatClient: ChatCompletionsClient by lazy {
