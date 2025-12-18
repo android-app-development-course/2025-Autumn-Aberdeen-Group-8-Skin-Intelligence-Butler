@@ -1,5 +1,11 @@
 package com.proteam.aiskincareadvisor.ui.screens.main
 
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -17,6 +23,9 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -28,12 +37,11 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.proteam.aiskincareadvisor.R
 import com.proteam.aiskincareadvisor.data.auth.FirebaseAuthHelper
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.proteam.aiskincareadvisor.data.preferences.ThemeMode
 import com.proteam.aiskincareadvisor.data.viewmodel.ThemeViewModel
 import java.text.DateFormat
-import java.util.Date
+import java.util.*
 
 @Composable
 fun ProfileScreen(
@@ -44,7 +52,7 @@ fun ProfileScreen(
 ) {
     val primaryColor = MaterialTheme.colorScheme.primary
     val context = LocalContext.current
-    
+
     // Get theme preferences from ViewModel
     val themeMode by themeViewModel.themeMode.collectAsState()
     val useDynamicColors by themeViewModel.useDynamicColors.collectAsState()
@@ -76,35 +84,49 @@ fun ProfileScreen(
                 // Account Settings Header
                 Text(
                     text = "ACCOUNT SETTINGS",
-                    fontSize = 14.sp,
+                    fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(vertical = 16.dp)
                 )
 
                 // Personal Information Section
-                Surface(
-                    color = MaterialTheme.colorScheme.surface,
-                    shape = RoundedCornerShape(12.dp),
-                    shadowElevation = 2.dp,
-                    modifier = Modifier.fillMaxWidth()
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .shadow(
+                            elevation = 3.dp,
+                            shape = RoundedCornerShape(20.dp),
+                            clip = true
+                        ),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    ),
+                    shape = RoundedCornerShape(20.dp)
                 ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
+                    Column(modifier = Modifier.padding(20.dp)) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(bottom = 12.dp)
+                            modifier = Modifier.padding(bottom = 16.dp)
                         ) {
-                            Icon(
-                                imageVector = Icons.Outlined.Person,
-                                contentDescription = null,
-                                tint = primaryColor,
-                                modifier = Modifier.size(24.dp)
-                            )
+                            Surface(
+                                shape = CircleShape,
+                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Person,
+                                    contentDescription = null,
+                                    tint = primaryColor,
+                                    modifier = Modifier
+                                        .padding(10.dp)
+                                        .size(20.dp)
+                                )
+                            }
                             Spacer(modifier = Modifier.width(12.dp))
                             Text(
                                 text = "Personal Information",
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Medium,
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.SemiBold,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                         }
@@ -119,51 +141,78 @@ fun ProfileScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Security Section
-                Surface(
-                    color = MaterialTheme.colorScheme.surface,
-                    shape = RoundedCornerShape(12.dp),
-                    shadowElevation = 2.dp,
-                    modifier = Modifier.fillMaxWidth()
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .shadow(
+                            elevation = 3.dp,
+                            shape = RoundedCornerShape(20.dp),
+                            clip = true
+                        ),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    ),
+                    shape = RoundedCornerShape(20.dp)
                 ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
+                    Column(modifier = Modifier.padding(20.dp)) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(bottom = 12.dp)
+                            modifier = Modifier.padding(bottom = 16.dp)
                         ) {
-                            Icon(
-                                imageVector = Icons.Outlined.Lock,
-                                contentDescription = null,
-                                tint = primaryColor,
-                                modifier = Modifier.size(24.dp)
-                            )
+                            Surface(
+                                shape = CircleShape,
+                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Lock,
+                                    contentDescription = null,
+                                    tint = primaryColor,
+                                    modifier = Modifier
+                                        .padding(10.dp)
+                                        .size(20.dp)
+                                )
+                            }
                             Spacer(modifier = Modifier.width(12.dp))
                             Text(
                                 text = "Security",
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Medium,
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.SemiBold,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                         }
 
                         val currentUser = authHelper.getCurrentUser()
-                        ProfileInfoItem(label = "Email Verified", value = if (currentUser?.isEmailVerified == true) "Yes" else "No")
-                        ProfileInfoItem(label = "Account Created", value = currentUser?.metadata?.creationTimestamp?.let {
-                            DateFormat.getDateTimeInstance().format(Date(it))
-                        } ?: "Unknown")
+                        ProfileInfoItem(
+                            label = "Email Verified",
+                            value = if (currentUser?.isEmailVerified == true) "Yes" else "No"
+                        )
+                        ProfileInfoItem(
+                            label = "Account Created",
+                            value = currentUser?.metadata?.creationTimestamp?.let {
+                                DateFormat.getDateTimeInstance().format(Date(it))
+                            } ?: "Unknown"
+                        )
 
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(12.dp))
 
                         Button(
                             onClick = {
-                                // Navigate to Change Password Screen
                                 navController.navigate("change_password")
-
                             },
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = ButtonDefaults.buttonColors(containerColor = primaryColor),
-                            shape = RoundedCornerShape(8.dp)
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(50.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = primaryColor,
+                                contentColor = MaterialTheme.colorScheme.onPrimary
+                            ),
+                            shape = RoundedCornerShape(12.dp)
                         ) {
-                            Text(text = "Change Password")
+                            Text(
+                                text = "Change Password",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
                         }
                     }
                 }
@@ -171,38 +220,52 @@ fun ProfileScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 // Theme Settings Section
-                Surface(
-                    color = MaterialTheme.colorScheme.surface,
-                    shape = RoundedCornerShape(12.dp),
-                    shadowElevation = 2.dp,
-                    modifier = Modifier.fillMaxWidth()
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .shadow(
+                            elevation = 3.dp,
+                            shape = RoundedCornerShape(20.dp),
+                            clip = true
+                        ),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.surface
+                    ),
+                    shape = RoundedCornerShape(20.dp)
                 ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
+                    Column(modifier = Modifier.padding(20.dp)) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(bottom = 12.dp)
+                            modifier = Modifier.padding(bottom = 16.dp)
                         ) {
-                            Icon(
-                                imageVector = Icons.Outlined.Palette,
-                                contentDescription = null,
-                                tint = primaryColor,
-                                modifier = Modifier.size(24.dp)
-                            )
+                            Surface(
+                                shape = CircleShape,
+                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Palette,
+                                    contentDescription = null,
+                                    tint = primaryColor,
+                                    modifier = Modifier
+                                        .padding(10.dp)
+                                        .size(20.dp)
+                                )
+                            }
                             Spacer(modifier = Modifier.width(12.dp))
                             Text(
                                 text = "Appearance",
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.Medium,
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.SemiBold,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
                         }
-                        
+
                         // Theme mode options
                         ProfileItemWithSetting(
                             icon = ImageVector.vectorResource(id = R.drawable.ic_dark_mode),
-                            title = "Theme Mode",
+                            title = "Theme Settings",
+                            subtitle = "Customize app appearance",
                             onClick = {
-                                // Navigate to detailed theme settings
                                 navController.navigate("settings")
                             }
                         )
@@ -214,23 +277,28 @@ fun ProfileScreen(
                 // Log Out Button
                 Button(
                     onClick = {
-                        // Use the helper method to sign out
                         authHelper.signOut()
                         onLogout()
                     },
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error),
-                    shape = RoundedCornerShape(12.dp)
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(56.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer,
+                        contentColor = MaterialTheme.colorScheme.onErrorContainer
+                    ),
+                    shape = RoundedCornerShape(14.dp)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Close,
+                        imageVector = Icons.Default.Logout,
                         contentDescription = "Logout",
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(22.dp)
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(10.dp))
                     Text(
                         text = "LOG OUT",
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 16.sp
                     )
                 }
             }
@@ -240,126 +308,194 @@ fun ProfileScreen(
 
 @Composable
 fun ProfileInfoItem(label: String, value: String) {
-    Column(modifier = Modifier.padding(vertical = 6.dp)) {
+    Column(modifier = Modifier.padding(vertical = 8.dp)) {
         Text(
             text = label,
-            fontSize = 12.sp,
+            fontSize = 14.sp,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
 
         Text(
             text = value,
             fontSize = 16.sp,
-            color = MaterialTheme.colorScheme.onSurface
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.padding(top = 2.dp)
         )
     }
 
-    HorizontalDivider(
-        thickness = 0.5.dp,
-        color = MaterialTheme.colorScheme.outlineVariant
-    )
+    if (label != "Account Created") {
+        HorizontalDivider(
+            modifier = Modifier.padding(vertical = 8.dp),
+            thickness = 0.8.dp,
+            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f)
+        )
+    }
 }
 
 @Composable
 fun ProfileHeaderWithCover(primaryColor: Color, authHelper: FirebaseAuthHelper) {
+    // 轻微浮动动画
+    val infiniteTransition = rememberInfiniteTransition(label = "profileFloat")
+    val floatOffset by infiniteTransition.animateFloat(
+        initialValue = -2f,
+        targetValue = 2f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 3000, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "profileFloatAnim"
+    )
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(200.dp)
+            .height(240.dp)
     ) {
-        // Cover image/background
+        // 背景图片
+        Image(
+            painter = painterResource(id = R.drawable.profile_background), // 请添加您的背景图片
+            contentDescription = "Profile Background",
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(175.dp)
+        )
+
+        // 渐变覆盖层，让文字更清晰
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(140.dp)
-                .background(primaryColor)
+                .height(160.dp)
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            Color.Transparent,
+                            MaterialTheme.colorScheme.surface.copy(alpha = 0.1f)
+                        )
+                    )
+                )
         )
 
-        // Profile image
+        // Profile image with animation
         Column(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(bottom = 8.dp),
+                .padding(bottom = 8.dp)
+                .offset(y = floatOffset.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.hydrating_moisturizer),
-                contentDescription = "Profile Image",
-                contentScale = ContentScale.Crop,
+            // Profile image container with gradient border
+            Box(
                 modifier = Modifier
                     .size(100.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.surface, CircleShape)
-                    .border(3.dp, MaterialTheme.colorScheme.surface, CircleShape)
-            )
+                    .shadow(
+                        elevation = 8.dp,
+                        shape = CircleShape,
+                        clip = false
+                    )
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                MaterialTheme.colorScheme.primary,
+                                MaterialTheme.colorScheme.secondary
+                            )
+                        ),
+                        shape = CircleShape
+                    )
+                    .padding(4.dp)
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.head),
+                    contentDescription = "Profile Image",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.surface, CircleShape)
+                )
+            }
 
             val currentUser = authHelper.getCurrentUser()
             if (currentUser != null) {
                 Text(
                     text = currentUser.displayName ?: "User",
-                    fontSize = 20.sp,
+                    fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onBackground,
-                    modifier = Modifier.padding(top = 8.dp)
+                    modifier = Modifier.padding(top = 12.dp)
                 )
 
                 Text(
                     text = currentUser.email ?: "",
-                    fontSize = 14.sp,
+                    fontSize = 16.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             } else {
                 Text(
                     text = "Guest User",
-                    fontSize = 20.sp,
+                    fontSize = 22.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onBackground,
-                    modifier = Modifier.padding(top = 8.dp)
+                    modifier = Modifier.padding(top = 12.dp)
                 )
             }
         }
 
-        // Edit Profile Button
+        // Edit Profile Button with improved styling
         IconButton(
             onClick = { /* Edit profile action */ },
             modifier = Modifier
                 .align(Alignment.TopEnd)
-                .padding(8.dp)
-                .size(36.dp)
-                .background(MaterialTheme.colorScheme.surface.copy(alpha = 0.8f), CircleShape)
+                .padding(16.dp)
+                .size(42.dp)
+                .background(
+                    MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
+                    CircleShape
+                )
+                .shadow(4.dp, CircleShape)
         ) {
             Icon(
                 imageVector = Icons.Default.Edit,
                 contentDescription = "Edit Profile",
                 tint = primaryColor,
-                modifier = Modifier.size(20.dp)
+                modifier = Modifier.size(22.dp)
             )
         }
     }
 }
 
 @Composable
-fun ProfileMenuItem(
+fun ProfileItemWithSetting(
     icon: ImageVector,
     title: String,
     subtitle: String,
-    primaryColor: Color,
-    showDivider: Boolean = true
+    onClick: () -> Unit
 ) {
-    Column {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        color = Color.Transparent,
+        shape = RoundedCornerShape(12.dp)
+    ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { /* Handle click */ }
-                .padding(vertical = 12.dp, horizontal = 16.dp),
+            modifier = Modifier.padding(vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = primaryColor,
-                modifier = Modifier.size(24.dp)
-            )
+            Surface(
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier
+                        .padding(10.dp)
+                        .size(20.dp)
+                )
+            }
 
             Spacer(modifier = Modifier.width(16.dp))
 
@@ -370,66 +506,20 @@ fun ProfileMenuItem(
                     fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.onSurface
                 )
-
                 Text(
                     text = subtitle,
-                    fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    fontSize = 14.sp,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 2.dp)
                 )
             }
 
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                contentDescription = null,
+                contentDescription = "Navigate to settings",
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(20.dp)
             )
         }
-
-        if (showDivider) {
-            HorizontalDivider(
-                modifier = Modifier.padding(start = 56.dp, end = 16.dp),
-                thickness = 0.5.dp,
-                color = MaterialTheme.colorScheme.outlineVariant
-            )
-        }
-    }
-}
-
-@Composable
-fun ProfileItemWithSetting(
-    icon: ImageVector,
-    title: String,
-    onClick: () -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(24.dp)
-        )
-
-        Spacer(modifier = Modifier.width(16.dp))
-
-        Text(
-            text = title,
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Medium,
-            color = MaterialTheme.colorScheme.onSurface,
-            modifier = Modifier.weight(1f)
-        )
-
-        Icon(
-            imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-            contentDescription = "Navigate to settings",
-            tint = MaterialTheme.colorScheme.onSurfaceVariant
-        )
     }
 }

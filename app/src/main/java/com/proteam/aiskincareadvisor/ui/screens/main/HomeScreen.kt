@@ -1,5 +1,11 @@
 package com.proteam.aiskincareadvisor.ui.screens.main
 
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -10,12 +16,18 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ChatBubble
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.PhotoCamera
+import androidx.compose.material.icons.filled.Spa
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -32,11 +44,10 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.proteam.aiskincareadvisor.R
 import com.proteam.aiskincareadvisor.data.model.Product
 import com.proteam.aiskincareadvisor.data.viewmodel.SkinHistoryViewModel
+import com.proteam.aiskincareadvisor.ui.components.ProductDetailDialog
 import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
 import java.util.*
-import androidx.compose.ui.window.Dialog
-import com.proteam.aiskincareadvisor.ui.components.ProductDetailDialog
 
 @Composable
 fun HomeScreen(navController: NavController) {
@@ -49,23 +60,27 @@ fun HomeScreen(navController: NavController) {
             .background(MaterialTheme.colorScheme.background)
             .padding(bottom = 16.dp)
     ) {
-        // Welcome section
+        // 顶部欢迎 + 动画插画
         item {
-            WelcomeSection(onAnalyzeClick = {
-                navController.navigate("skin_analysis")
-            })
+            WelcomeSection(
+                onAnalyzeClick = { navController.navigate("skin_analysis") }
+            )
         }
 
-        // Latest analysis summary (if available)
+        // 最近一次分析
         item {
             latestResult?.let { result ->
-                SkinSummaryCard(result.timestamp, result.skinType, result.overallCondition) {
+                SkinSummaryCard(
+                    timestamp = result.timestamp,
+                    skinType = result.skinType,
+                    condition = result.overallCondition
+                ) {
                     navController.navigate("analysis")
                 }
             }
         }
 
-        // Quick actions
+        // 快捷入口
         item {
             QuickActionsSection(
                 onChatClick = { navController.navigate("chat") },
@@ -74,64 +89,137 @@ fun HomeScreen(navController: NavController) {
             )
         }
 
-        // Recommended products
+        // 推荐产品
         item {
             RecommendedProductsSection(navController = navController)
         }
 
-        // Tips and advice
+        // 每日小贴士
         item {
             DailyTipsSection()
         }
     }
 }
 
+/**
+ * 顶部欢迎区域：渐变背景 + 左侧文案 + 右侧插画，插画做轻微上下浮动动画
+ */
 @Composable
 fun WelcomeSection(onAnalyzeClick: () -> Unit) {
-    val primaryColor = MaterialTheme.colorScheme.primary
+    val primary = MaterialTheme.colorScheme.primary
+    val secondary = MaterialTheme.colorScheme.secondary
     val onPrimary = MaterialTheme.colorScheme.onPrimary
+
+    // 小幅度上下浮动动画
+    val infiniteTransition = rememberInfiniteTransition(label = "heroFloat")
+    val floatOffset by infiniteTransition.animateFloat(
+        initialValue = -4f,
+        targetValue = 4f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 2200, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "heroFloatAnim"
+    )
 
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .height(240.dp)
-            .background(primaryColor)
+            .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
-        Column(
+        // 渐变背景大卡片
+        Box(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.Center
-        ) {
-            Text(
-                "Good morning!",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                color = onPrimary
-            )
-
-            Text(
-                "Let Lemmie help you take better care of your skin every day.",
-                fontSize = 16.sp,
-                color = onPrimary,
-                modifier = Modifier.padding(top = 8.dp)
-            )
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            Button(
-                onClick = onAnalyzeClick,
-                modifier = Modifier.height(48.dp),
-                shape = RoundedCornerShape(24.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = onPrimary,
-                    contentColor = primaryColor
+                .fillMaxWidth()
+                .height(240.dp)
+                .clip(RoundedCornerShape(28.dp))
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            primary.copy(alpha = 0.95f),
+                            secondary.copy(alpha = 0.9f)
+                        )
+                    )
                 )
+        )
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(240.dp)
+                .padding(horizontal = 20.dp, vertical = 18.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // 左半：文字
+            Column(
+                modifier = Modifier
+                    .weight(1.3f),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 Text(
-                    "Start skin analysis",
-                    fontWeight = FontWeight.Bold
+                    text = "Good morning!",
+                    style = MaterialTheme.typography.headlineMedium.copy(
+                        fontWeight = FontWeight.Bold,
+                        color = onPrimary
+                    )
                 )
+
+                Text(
+                    text = "Let Lemmie help you take better care of your skin every day.",
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        color = onPrimary.copy(alpha = 0.9f),
+                        lineHeight = 20.sp
+                    )
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Button(
+                    onClick = onAnalyzeClick,
+                    modifier = Modifier
+                        .height(50.dp),
+                    shape = RoundedCornerShape(26.dp),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = onPrimary,
+                        contentColor = primary
+                    )
+                ) {
+                    Text(
+                        text = "Start skin analysis",
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 16.sp
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            // 右半：插画（带浮动动画）
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight(),
+                contentAlignment = Alignment.Center
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(138.dp)
+                        .offset(y = floatOffset.dp)
+                        .clip(CircleShape)
+                        .background(onPrimary.copy(alpha = 0.18f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Image(
+                        painter = painterResource(id = R.drawable.ai_assistant),
+                        contentDescription = "Skincare illustration",
+                        modifier = Modifier
+                            .padding(10.dp)
+                            .size(140.dp)
+                            .clip(CircleShape),
+                        contentScale = ContentScale.Fit
+                    )
+                }
             }
         }
     }
@@ -145,9 +233,13 @@ fun SkinSummaryCard(timestamp: Long, skinType: String, condition: String, onClic
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp)
-            .clickable(onClick = onClick),
-        shape = RoundedCornerShape(12.dp),
+            .padding(horizontal = 16.dp, vertical = 12.dp)
+            .clickable(onClick = onClick)
+            .shadow(
+                elevation = 3.dp,
+                shape = RoundedCornerShape(20.dp),
+                clip = true
+            ),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
         )
@@ -155,19 +247,26 @@ fun SkinSummaryCard(timestamp: Long, skinType: String, condition: String, onClic
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(18.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    "Latest analysis",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
+                Column {
+                    Text(
+                        "Latest analysis",
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 18.sp,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        "Tap to view full report",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                    )
+                }
 
                 Text(
                     formattedDate,
@@ -176,7 +275,7 @@ fun SkinSummaryCard(timestamp: Long, skinType: String, condition: String, onClic
                 )
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(14.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -184,39 +283,37 @@ fun SkinSummaryCard(timestamp: Long, skinType: String, condition: String, onClic
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        "Skin type:",
+                        "Skin type",
                         fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                     )
                     Text(
                         skinType,
                         fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onSurface
+                        fontWeight = FontWeight.Medium
                     )
                 }
 
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        "Condition:",
+                        "Condition",
                         fontSize = 14.sp,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                     )
                     Text(
                         condition,
                         fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.onSurface
+                        fontWeight = FontWeight.Medium
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             Text(
-                "View details >",
+                "View details",
                 fontSize = 14.sp,
-                fontWeight = FontWeight.Bold,
+                fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.align(Alignment.End)
             )
@@ -224,86 +321,100 @@ fun SkinSummaryCard(timestamp: Long, skinType: String, condition: String, onClic
     }
 }
 
+/**
+ * 三个快捷入口区域，背景尽量简洁一点
+ */
 @Composable
 fun QuickActionsSection(
     onChatClick: () -> Unit,
     onAnalyzeClick: () -> Unit,
     onRoutineClick: () -> Unit
 ) {
-    Column(modifier = Modifier.padding(16.dp)) {
+    Column(
+        modifier = Modifier
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+    ) {
         Text(
             "Quick access",
             fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onBackground
+            fontWeight = FontWeight.SemiBold,
+            color = MaterialTheme.colorScheme.onBackground,
+            modifier = Modifier.padding(bottom = 8.dp)
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Row(
+        Card(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
+            colors = CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surface
+            ),
+            shape = RoundedCornerShape(22.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
-            QuickActionButton(
-                icon = R.drawable.ic_camera,
-                title = "Analysis",
-                modifier = Modifier.weight(1f),
-                onClick = onAnalyzeClick
-            )
-
-            Spacer(modifier = Modifier.width(12.dp))
-
-            QuickActionButton(
-                icon = R.drawable.ic_spa,
-                title = "Routine",
-                modifier = Modifier.weight(1f),
-                onClick = onRoutineClick
-            )
-
-            Spacer(modifier = Modifier.width(12.dp))
-
-            QuickActionButton(
-                icon = R.drawable.ic_lock, // Replace with proper chat icon
-                title = "Chat AI",
-                modifier = Modifier.weight(1f),
-                onClick = onChatClick
-            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(14.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                QuickActionButton(
+                    icon = Icons.Filled.PhotoCamera,
+                    title = "Analysis",
+                    onClick = onAnalyzeClick,
+                    modifier = Modifier.weight(1f)
+                )
+                QuickActionButton(
+                    icon = Icons.Filled.Spa,
+                    title = "Routine",
+                    onClick = onRoutineClick,
+                    modifier = Modifier.weight(1f)
+                )
+                QuickActionButton(
+                    icon = Icons.Filled.ChatBubble,
+                    title = "Chat AI",
+                    onClick = onChatClick,
+                    modifier = Modifier.weight(1f)
+                )
+            }
         }
     }
 }
 
 @Composable
 fun QuickActionButton(
-    icon: Int,
+    icon: ImageVector,
     title: String,
     modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
-    Button(
-        onClick = onClick,
+    Surface(
         modifier = modifier
-            .height(100.dp),
-        shape = RoundedCornerShape(12.dp),
-        colors = ButtonDefaults.buttonColors(
-            containerColor = MaterialTheme.colorScheme.surface,
-            contentColor = MaterialTheme.colorScheme.primary
-        )
+            .height(90.dp)
+            .clip(RoundedCornerShape(18.dp))
+            .clickable(onClick = onClick),
+        tonalElevation = 1.dp,
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.45f)
     ) {
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Icon(
-                painter = painterResource(id = icon),
-                contentDescription = title,
-                modifier = Modifier.size(32.dp),
-                tint = MaterialTheme.colorScheme.primary
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
+            Surface(
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.14f)
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = title,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .size(24.dp)
+                )
+            }
+            Spacer(modifier = Modifier.height(6.dp))
             Text(
-                title,
+                text = title,
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.onSurface
@@ -322,7 +433,6 @@ fun RecommendedProductsSection(
     var recommendedProducts by remember { mutableStateOf<List<Product>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
 
-    // Fetch recommended products based on IDs from latest analysis
     LaunchedEffect(latestResult) {
         isLoading = true
         if (latestResult?.recommendedProductIds?.isNotEmpty() == true) {
@@ -336,7 +446,7 @@ fun RecommendedProductsSection(
                         productsList.add(it.copy(id = document.id))
                     }
                 } catch (_: Exception) {
-                    // Handle error silently
+                    // 忽略错误
                 }
             }
             recommendedProducts = productsList
@@ -348,29 +458,36 @@ fun RecommendedProductsSection(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp),
-        shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
-        )
+        ),
+        shape = RoundedCornerShape(24.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp)
+                .padding(18.dp)
         ) {
-            // Section header
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = "Recommended products",
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.primary
-                )
+                Column {
+                    Text(
+                        text = "Recommended products",
+                        fontSize = 21.sp,              // 再放大
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+
+                    Text(
+                        "Carefully selected based on your skin.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                    )
+                }
 
                 TextButton(onClick = { navController.navigate("products") }) {
                     Text(
@@ -388,19 +505,18 @@ fun RecommendedProductsSection(
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(180.dp),
+                            .height(160.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        CircularProgressIndicator(
-                            color = MaterialTheme.colorScheme.primary
-                        )
+                        CircularProgressIndicator()
                     }
                 }
+
                 recommendedProducts.isEmpty() -> {
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(180.dp),
+                            .height(160.dp),
                         contentAlignment = Alignment.Center
                     ) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -410,25 +526,33 @@ fun RecommendedProductsSection(
                                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                                 textAlign = TextAlign.Center
                             )
-
+                            Spacer(modifier = Modifier.height(10.dp))
                             Button(
                                 onClick = { navController.navigate("skin_analysis") },
+                                modifier = Modifier
+                                    .height(48.dp)
+                                    .padding(horizontal = 24.dp),
+                                shape = RoundedCornerShape(50),
                                 colors = ButtonDefaults.buttonColors(
-                                    containerColor = MaterialTheme.colorScheme.primary
+                                    containerColor = MaterialTheme.colorScheme.primary,
+                                    contentColor = MaterialTheme.colorScheme.onPrimary
                                 )
                             ) {
                                 Text(
-                                    "Analyze your skin now",
-                                    color = MaterialTheme.colorScheme.onPrimary
+                                    text = "Analyze your skin now",
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontSize = 16.sp
                                 )
                             }
+
                         }
                     }
                 }
+
                 else -> {
                     LazyRow(
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        contentPadding = PaddingValues(end = 8.dp)
+                        contentPadding = PaddingValues(end = 4.dp)
                     ) {
                         items(recommendedProducts) { product ->
                             RecommendedProductItem(product = product)
@@ -446,17 +570,16 @@ fun RecommendedProductItem(product: Product) {
 
     Card(
         modifier = Modifier
-            .width(160.dp)
+            .width(170.dp)
             .height(220.dp)
             .clickable { showDetailDialog = true },
-        shape = RoundedCornerShape(8.dp),
+        shape = RoundedCornerShape(18.dp),
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.95f)
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column {
-            // Product image
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(product.imageUrl)
@@ -471,33 +594,26 @@ fun RecommendedProductItem(product: Product) {
                     .height(110.dp)
             )
 
-            // Product info
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(12.dp)
+                    .padding(10.dp)
             ) {
-                // Product name
                 Text(
                     text = product.name,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.SemiBold,
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    color = MaterialTheme.colorScheme.onSurface
+                    overflow = TextOverflow.Ellipsis
                 )
-
-                // For skin types
                 Text(
                     text = product.skinTypes.joinToString(", "),
-                    fontSize = 12.sp,
+                    fontSize = 13.sp,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.padding(vertical = 4.dp)
+                    modifier = Modifier.padding(vertical = 2.dp)
                 )
-
-                // Price
                 Text(
                     text = product.price,
                     fontSize = 16.sp,
@@ -508,7 +624,6 @@ fun RecommendedProductItem(product: Product) {
         }
     }
 
-    // Show product detail dialog when clicked
     if (showDetailDialog) {
         ProductDetailDialog(
             product = product,
@@ -523,69 +638,67 @@ fun RecommendedProductItem(product: Product) {
 @Composable
 fun DailyTipsSection() {
     val tips = listOf(
-        "Drinking enough water every day keeps your skin healthy and glowing.",
-        "Always wear sunscreen, even when you stay indoors.",
-        "Use a face mask 1–2 times a week to hydrate and soothe your skin."
+        "Drink enough water every day to keep your skin hydrated.",
+        "Apply sunscreen every morning, even when staying indoors.",
+        "Use a gentle cleanser and avoid over-washing your face."
     )
 
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
-        shape = RoundedCornerShape(12.dp),
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        shape = RoundedCornerShape(22.dp),
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
-        )
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Info,
-                    contentDescription = "Tips",
-                    tint = MaterialTheme.colorScheme.primary
-                )
-
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Surface(
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Info,
+                        contentDescription = "Tips",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier
+                            .padding(8.dp)
+                            .size(18.dp)
+                    )
+                }
                 Spacer(modifier = Modifier.width(8.dp))
-
                 Text(
                     "Skincare tips",
                     fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
+                    fontWeight = FontWeight.SemiBold
                 )
             }
 
-            Divider(
-                modifier = Modifier.padding(vertical = 12.dp),
-                color = MaterialTheme.colorScheme.outlineVariant
-            )
+            Spacer(modifier = Modifier.height(10.dp))
 
             tips.forEach { tip ->
                 Row(
-                    modifier = Modifier.padding(vertical = 8.dp),
+                    modifier = Modifier.padding(vertical = 4.dp),
                     verticalAlignment = Alignment.Top
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(8.dp)
+                            .padding(top = 6.dp)
+                            .size(6.dp)
                             .clip(CircleShape)
                             .background(MaterialTheme.colorScheme.primary)
-                            .align(Alignment.CenterVertically)
                     )
-
                     Spacer(modifier = Modifier.width(8.dp))
-
                     Text(
                         text = tip,
                         fontSize = 14.sp,
-                        lineHeight = 20.sp,
-                        color = MaterialTheme.colorScheme.onSurface
+                        lineHeight = 20.sp
                     )
                 }
             }

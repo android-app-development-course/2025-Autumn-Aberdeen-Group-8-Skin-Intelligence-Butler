@@ -32,7 +32,7 @@ fun RoutineScreen(viewModel: RoutineViewModel = viewModel()) {
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Routine Hôm Nay", fontWeight = FontWeight.Bold) })
+            TopAppBar(title = { Text("Today's Routine", fontWeight = FontWeight.Bold) })
         }
     ) { padding ->
         LazyColumn(

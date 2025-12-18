@@ -11,7 +11,7 @@ plugins {
 
 android {
     namespace = "com.proteam.aiskincareadvisor"
-    compileSdk = 35
+    compileSdk = 36
 
     val localPropertiesFile = rootProject.file("local.properties")
     if (!localPropertiesFile.exists()) {
@@ -24,16 +24,18 @@ android {
     val apiToken: String = localProperties.getProperty("apiAIToken") ?: ""
     val azureAIEndpoint: String = localProperties.getProperty("azureAIEndpoint") ?: ""
 
+    val dashscopeApiKey: String = localProperties.getProperty("DASHSCOPE_API_KEY") ?: ""
+
     defaultConfig {
         applicationId = "com.proteam.aiskincareadvisor"
         minSdk = 26
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
 
-
         buildConfigField("String", "API_AI_TOKEN", "\"$apiToken\"")
         buildConfigField("String", "AZURE_AI_ENDPOINT", "\"$azureAIEndpoint\"")
+        buildConfigField("String", "DASHSCOPE_API_KEY", "\"$dashscopeApiKey\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -114,6 +116,7 @@ dependencies {
     
     implementation("com.google.android.material:material:1.12.0")
     implementation ("androidx.compose.material:material-icons-extended:1.5.0")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
 
     implementation (libs.androidx.navigation.compose.v275)
 

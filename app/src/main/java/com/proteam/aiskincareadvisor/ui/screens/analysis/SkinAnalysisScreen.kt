@@ -75,7 +75,7 @@ fun SkinAnalysisScreen() {
     ) {
         // 标题：用主题字体+主文字色
         Text(
-            text = "Phân tích làn da",
+            text = "Skin Analysis",
             style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
             color = MaterialTheme.colorScheme.onBackground
         )
@@ -108,7 +108,7 @@ fun SkinAnalysisScreen() {
                     contentColor = MaterialTheme.colorScheme.onPrimary
                 )
             ) {
-                Text("Chụp ảnh")
+                Text("Take Photo")
             }
 
             Button(
@@ -119,7 +119,7 @@ fun SkinAnalysisScreen() {
                     contentColor = MaterialTheme.colorScheme.onPrimary
                 )
             ) {
-                Text("Chọn từ thư viện")
+                Text("Choose from Gallery")
             }
         }
 
@@ -154,7 +154,7 @@ fun SkinAnalysisScreen() {
                     contentColor = MaterialTheme.colorScheme.onPrimary
                 )
             ) {
-                Text("Phân tích ngay")
+                Text("Analyze Now")
             }
         }
 
@@ -185,7 +185,7 @@ fun SkinAnalysisScreen() {
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(
-                        text = "Kết quả phân tích",
+                        text = "Analysis Results",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface              // ✅ 用卡片文字色

@@ -1,0 +1,33 @@
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import com.proteam.aiskincareadvisor.BuildConfig
+import com.proteam.aiskincareadvisor.data.remote.QwenClient
+
+class ChatViewModel : ViewModel() {
+
+    private val _reply = MutableStateFlow("")
+    val reply = _reply.asStateFlow()
+
+    fun askQwen(userText: String) {
+        viewModelScope.launch {
+            try {
+                val result = withContext(Dispatchers.IO) {
+                    val client = QwenClient(apiKey = BuildConfig.DASHSCOPE_API_KEY)
+                    client.chat(
+                        model = "qwen-plus",
+                        system = "You are a skincare analysis expert. Only answer skincare-related questions. Reply in English.",
+                        user = userText
+                    )
+                }
+                _reply.value = result
+            } catch (e: Exception) {
+                _reply.value = "Error: ${e.message}"
+            }
+        }
+    }
+}

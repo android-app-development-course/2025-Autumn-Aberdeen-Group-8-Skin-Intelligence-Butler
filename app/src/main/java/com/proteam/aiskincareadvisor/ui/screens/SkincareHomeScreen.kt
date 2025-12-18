@@ -12,6 +12,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.proteam.aiskincareadvisor.R
+import androidx.compose.ui.unit.sp
 
 @Composable
 fun SkincareHomeScreen(
@@ -29,7 +30,7 @@ fun SkincareHomeScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "Lemmie",
+                text = "Skin Butler",
                 style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
                 modifier = Modifier.padding(top = 32.dp, bottom = 8.dp)
             )
@@ -67,7 +68,10 @@ fun SkincareHomeScreen(
                     containerColor = MaterialTheme.colorScheme.primary
                 )
             ) {
-                Text(text = "Get Started")
+                Text(text = "Get Started",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold
+                )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
